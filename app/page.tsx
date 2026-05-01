@@ -4,6 +4,7 @@ import { useState } from "react";
 
 const VAULT_NAME    = process.env.NEXT_PUBLIC_VAULT_NAME    || "mMEV";
 const VAULT_ADDRESS = process.env.NEXT_PUBLIC_VAULT_ADDRESS || "";
+const CHAIN         = process.env.NEXT_PUBLIC_CHAIN         || "EVM";
 const ETHERSCAN_URL = VAULT_ADDRESS ? `https://etherscan.io/address/${VAULT_ADDRESS}` : null;
 
 const STATS = [
@@ -57,7 +58,7 @@ export default function Home() {
                 </span>
               </div>
               <p className="text-ink-soft text-sm mt-0.5">
-                MEV Capital · Liquid Yield Token · USDC
+                MEV Capital · Liquid Yield Token · USDC · {CHAIN}
               </p>
             </div>
           </div>
