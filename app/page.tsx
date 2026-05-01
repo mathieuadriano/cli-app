@@ -2,6 +2,10 @@
 
 import { useState } from "react";
 
+const VAULT_NAME    = process.env.NEXT_PUBLIC_VAULT_NAME    || "mMEV";
+const VAULT_ADDRESS = process.env.NEXT_PUBLIC_VAULT_ADDRESS || "";
+const ETHERSCAN_URL = VAULT_ADDRESS ? `https://etherscan.io/address/${VAULT_ADDRESS}` : null;
+
 const STATS = [
   { label: "Total Value Locked", value: "$82.4M", change: "+2.3%" },
   { label: "Net APY", value: "12.7%", change: "+0.4%" },
@@ -26,7 +30,7 @@ export default function Home() {
       <nav className="border-b border-rim px-6 py-4 flex items-center justify-between max-w-7xl mx-auto">
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 rounded-full bg-gradient-to-br from-brand-gfrom to-brand-gto" />
-          <span className="font-semibold tracking-tight text-ink">Midas</span>
+          <span className="font-semibold tracking-tight text-ink">C</span>
         </div>
         <div className="flex items-center gap-6 text-sm text-ink-soft">
           <a href="#" className="hover:text-ink transition-colors">Vaults</a>
@@ -47,7 +51,7 @@ export default function Home() {
             </div>
             <div>
               <div className="flex items-center gap-3">
-                <h1 className="text-2xl font-semibold tracking-tight">mMEV</h1>
+                <h1 className="text-2xl font-semibold tracking-tight">{VAULT_NAME}</h1>
                 <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-brand-tint text-brand-dim border border-brand-ring">
                   Active
                 </span>
@@ -58,9 +62,15 @@ export default function Home() {
             </div>
           </div>
           <div className="flex gap-2">
-            <button className="text-sm text-ink-soft border border-rim px-3 py-1.5 rounded-lg hover:border-rim-strong hover:text-ink transition-colors">
-              Smart Contract ↗
-            </button>
+            {ETHERSCAN_URL ? (
+              <a href={ETHERSCAN_URL} target="_blank" rel="noopener noreferrer" className="text-sm text-ink-soft border border-rim px-3 py-1.5 rounded-lg hover:border-rim-strong hover:text-ink transition-colors">
+                Smart Contract ↗
+              </a>
+            ) : (
+              <button disabled className="text-sm text-ink-faint border border-rim px-3 py-1.5 rounded-lg opacity-40 cursor-not-allowed">
+                Smart Contract ↗
+              </button>
+            )}
             <button className="text-sm text-ink-soft border border-rim px-3 py-1.5 rounded-lg hover:border-rim-strong hover:text-ink transition-colors">
               Audit ↗
             </button>
@@ -169,7 +179,7 @@ export default function Home() {
                   </span>
                   <span className="text-xs text-ink-soft">
                     Balance: <span className="text-ink-soft">4,200.00</span>{" "}
-                    {tab === "deposit" ? "USDC" : "mMEV"}
+                    {tab === "deposit" ? "USDC" : VAULT_NAME}
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
@@ -183,7 +193,7 @@ export default function Home() {
                   <div className="flex items-center gap-2 bg-panel border border-rim rounded-lg px-3 py-1.5 shrink-0">
                     <div className="w-4 h-4 rounded-full bg-blue-400" />
                     <span className="text-sm font-medium">
-                      {tab === "deposit" ? "USDC" : "mMEV"}
+                      {tab === "deposit" ? "USDC" : VAULT_NAME}
                     </span>
                   </div>
                 </div>
@@ -218,7 +228,7 @@ export default function Home() {
                   <div className="flex items-center gap-2 bg-panel border border-rim rounded-lg px-3 py-1.5 shrink-0">
                     <div className="w-4 h-4 rounded-full bg-gradient-to-br from-brand-gfrom to-brand-gto" />
                     <span className="text-sm font-medium">
-                      {tab === "deposit" ? "mMEV" : "USDC"}
+                      {tab === "deposit" ? VAULT_NAME : "USDC"}
                     </span>
                   </div>
                 </div>
