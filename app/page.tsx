@@ -30,7 +30,7 @@ export default function Home() {
       <nav className="border-b border-rim px-6 py-4 flex items-center justify-between max-w-7xl mx-auto">
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 rounded-full bg-gradient-to-br from-brand-gfrom to-brand-gto" />
-          <span className="font-semibold tracking-tight text-ink">C</span>
+          <span className="font-semibold tracking-tight text-ink">Vault Page Generator</span>
         </div>
         <div className="flex items-center gap-6 text-sm text-ink-soft">
           <a href="#" className="hover:text-ink transition-colors">Vaults</a>
