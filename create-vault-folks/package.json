@@ -1,0 +1,25 @@
+{
+  "name": "create-vault-folks",
+  "version": "0.6.0",
+  "description": "Scaffold a DeFi vault app in seconds",
+  "type": "module",
+  "bin": {
+    "create-vault-folks": "index.js"
+  },
+  "files": [
+    "index.js"
+  ],
+  "dependencies": {
+    "degit": "^2.8.4"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "create-app",
+    "vault",
+    "defi",
+    "nextjs"
+  ],
+  "license": "MIT"
+}
