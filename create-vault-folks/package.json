@@ -1,6 +1,6 @@
 {
   "name": "create-vault-folks",
-  "version": "0.7.8",
+  "version": "0.8.0",
   "description": "Scaffold a DeFi vault app in seconds",
   "type": "module",
   "bin": {

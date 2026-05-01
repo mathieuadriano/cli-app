@@ -77,6 +77,7 @@ if (p.isCancel(vaultName)) { p.cancel("Cancelled."); process.exit(0); }
 const vaultAddress = vaultArg || await p.text({
   message: "🔐 Vault address",
   placeholder: "0x… (leave blank to skip)",
+  initialValue: "0xb576765fB15505433aF24FEe2c0325895C559FB2",
   validate: (v) => v && !/^0x[0-9a-fA-F]{40}$/.test(v) ? "Not a valid Ethereum address." : undefined,
 });
 if (p.isCancel(vaultAddress)) { p.cancel("Cancelled."); process.exit(0); }
@@ -198,7 +199,11 @@ if (deployToVercel) {
 
   console.log(`\n  \x1b[2m${sep}\x1b[0m`);
 
-  const proc = spawn("vercel", ["--yes"], { cwd: target, stdio: ["inherit", "pipe", "pipe"] });
+  const vercelArgs = ["--yes"];
+  if (vaultName)    vercelArgs.push("--env", `NEXT_PUBLIC_VAULT_NAME=${vaultName}`);
+  if (vaultAddress) vercelArgs.push("--env", `NEXT_PUBLIC_VAULT_ADDRESS=${vaultAddress}`);
+
+  const proc = spawn("vercel", vercelArgs, { cwd: target, stdio: ["inherit", "pipe", "pipe"] });
 
   let buf = "";
   const handleChunk = (chunk) => {
@@ -254,6 +259,18 @@ if (deployToVercel) {
   console.log(`\n  \x1b[2m${sep}\x1b[0m\n`);
 
   if (deployedToVercel) p.log.success("🚀 Project deployed on Vercel!");
+
+  // Persist env vars in Vercel project settings so GitHub-triggered builds also pick them up
+  if (deployedToVercel && (vaultName || vaultAddress)) {
+    spinner.start("🔑 Persisting env vars in Vercel…");
+    try {
+      if (vaultName)    execSync("vercel env add NEXT_PUBLIC_VAULT_NAME production", { cwd: target, input: vaultName,    stdio: ["pipe", "ignore", "ignore"] });
+      if (vaultAddress) execSync("vercel env add NEXT_PUBLIC_VAULT_ADDRESS production", { cwd: target, input: vaultAddress, stdio: ["pipe", "ignore", "ignore"] });
+      spinner.stop("✅ Env vars saved to Vercel project.");
+    } catch {
+      spinner.stop("⚠️  Could not persist env vars — add them manually in Vercel project settings.");
+    }
+  }
 
   if (remote) {
     try { execSync(`git remote add origin ${remote}`, { cwd: target, stdio: "ignore" }); } catch {}
