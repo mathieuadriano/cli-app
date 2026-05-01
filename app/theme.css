@@ -1,0 +1,90 @@
+/* ─── dark (default) ─── */
+:root,
+[data-theme="dark"] {
+  --canvas: #080b10;
+  --panel: rgba(255, 255, 255, 0.03);
+  --rim: rgba(255, 255, 255, 0.06);
+  --rim-strong: rgba(255, 255, 255, 0.2);
+  --ink: #ffffff;
+  --ink-soft: #71717a;
+  --ink-faint: #3f3f46;
+  --brand: #10b981;
+  --brand-dim: #34d399;
+  --brand-on: #000000;
+  --brand-tint: rgba(16, 185, 129, 0.1);
+  --brand-ring: rgba(16, 185, 129, 0.2);
+  --brand-gfrom: #34d399;
+  --brand-gto: #0d9488;
+}
+
+/* ─── light ─── */
+[data-theme="light"] {
+  --canvas: #f8fafc;
+  --panel: rgba(0, 0, 0, 0.03);
+  --rim: rgba(0, 0, 0, 0.08);
+  --rim-strong: rgba(0, 0, 0, 0.2);
+  --ink: #0f172a;
+  --ink-soft: #64748b;
+  --ink-faint: #94a3b8;
+  --brand: #059669;
+  --brand-dim: #10b981;
+  --brand-on: #ffffff;
+  --brand-tint: rgba(5, 150, 105, 0.1);
+  --brand-ring: rgba(5, 150, 105, 0.2);
+  --brand-gfrom: #10b981;
+  --brand-gto: #0d9488;
+}
+
+/* ─── gray ─── */
+[data-theme="gray"] {
+  --canvas: #18181b;
+  --panel: rgba(255, 255, 255, 0.04);
+  --rim: rgba(255, 255, 255, 0.08);
+  --rim-strong: rgba(255, 255, 255, 0.25);
+  --ink: #f4f4f5;
+  --ink-soft: #a1a1aa;
+  --ink-faint: #52525b;
+  --brand: #6366f1;
+  --brand-dim: #818cf8;
+  --brand-on: #ffffff;
+  --brand-tint: rgba(99, 102, 241, 0.1);
+  --brand-ring: rgba(99, 102, 241, 0.2);
+  --brand-gfrom: #818cf8;
+  --brand-gto: #6366f1;
+}
+
+/* ─── ocean ─── */
+[data-theme="ocean"] {
+  --canvas: #020617;
+  --panel: rgba(255, 255, 255, 0.03);
+  --rim: rgba(255, 255, 255, 0.06);
+  --rim-strong: rgba(255, 255, 255, 0.2);
+  --ink: #f0f9ff;
+  --ink-soft: #7dd3fc;
+  --ink-faint: #0369a1;
+  --brand: #0ea5e9;
+  --brand-dim: #38bdf8;
+  --brand-on: #000000;
+  --brand-tint: rgba(14, 165, 233, 0.1);
+  --brand-ring: rgba(14, 165, 233, 0.2);
+  --brand-gfrom: #38bdf8;
+  --brand-gto: #0284c7;
+}
+
+/* ─── purple ─── */
+[data-theme="purple"] {
+  --canvas: #0d0a1a;
+  --panel: rgba(255, 255, 255, 0.03);
+  --rim: rgba(255, 255, 255, 0.06);
+  --rim-strong: rgba(255, 255, 255, 0.2);
+  --ink: #faf5ff;
+  --ink-soft: #c084fc;
+  --ink-faint: #7c3aed;
+  --brand: #a855f7;
+  --brand-dim: #c084fc;
+  --brand-on: #000000;
+  --brand-tint: rgba(168, 85, 247, 0.1);
+  --brand-ring: rgba(168, 85, 247, 0.2);
+  --brand-gfrom: #c084fc;
+  --brand-gto: #7c3aed;
+}

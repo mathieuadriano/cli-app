@@ -21,19 +21,19 @@ export default function Home() {
   const [amount, setAmount] = useState("");
 
   return (
-    <div className="min-h-screen bg-[#080b10] text-white font-sans">
+    <div className="min-h-screen bg-canvas text-ink font-sans">
       {/* Nav */}
-      <nav className="border-b border-white/[.06] px-6 py-4 flex items-center justify-between max-w-7xl mx-auto">
+      <nav className="border-b border-rim px-6 py-4 flex items-center justify-between max-w-7xl mx-auto">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-emerald-400 to-teal-600" />
-          <span className="font-semibold tracking-tight text-white">Midas</span>
+          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-brand-gfrom to-brand-gto" />
+          <span className="font-semibold tracking-tight text-ink">Midas</span>
         </div>
-        <div className="flex items-center gap-6 text-sm text-zinc-400">
-          <a href="#" className="hover:text-white transition-colors">Vaults</a>
-          <a href="#" className="hover:text-white transition-colors">Portfolio</a>
-          <a href="#" className="hover:text-white transition-colors">Docs</a>
+        <div className="flex items-center gap-6 text-sm text-ink-soft">
+          <a href="#" className="hover:text-ink transition-colors">Vaults</a>
+          <a href="#" className="hover:text-ink transition-colors">Portfolio</a>
+          <a href="#" className="hover:text-ink transition-colors">Docs</a>
         </div>
-        <button className="text-sm bg-white text-black font-medium px-4 py-2 rounded-full hover:bg-zinc-200 transition-colors">
+        <button className="text-sm bg-ink text-canvas font-medium px-4 py-2 rounded-full hover:opacity-80 transition-opacity">
           Connect Wallet
         </button>
       </nav>
@@ -42,26 +42,26 @@ export default function Home() {
         {/* Header */}
         <div className="flex items-start justify-between mb-10">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-400/20 to-teal-600/20 border border-emerald-500/20 flex items-center justify-center text-xl">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-gfrom/20 to-brand-gto/20 border border-brand-ring flex items-center justify-center text-xl">
               ⚡
             </div>
             <div>
               <div className="flex items-center gap-3">
                 <h1 className="text-2xl font-semibold tracking-tight">mMEV</h1>
-                <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-brand-tint text-brand-dim border border-brand-ring">
                   Active
                 </span>
               </div>
-              <p className="text-zinc-400 text-sm mt-0.5">
+              <p className="text-ink-soft text-sm mt-0.5">
                 MEV Capital · Liquid Yield Token · USDC
               </p>
             </div>
           </div>
           <div className="flex gap-2">
-            <button className="text-sm text-zinc-400 border border-white/[.08] px-3 py-1.5 rounded-lg hover:border-white/20 hover:text-white transition-colors">
+            <button className="text-sm text-ink-soft border border-rim px-3 py-1.5 rounded-lg hover:border-rim-strong hover:text-ink transition-colors">
               Smart Contract ↗
             </button>
-            <button className="text-sm text-zinc-400 border border-white/[.08] px-3 py-1.5 rounded-lg hover:border-white/20 hover:text-white transition-colors">
+            <button className="text-sm text-ink-soft border border-rim px-3 py-1.5 rounded-lg hover:border-rim-strong hover:text-ink transition-colors">
               Audit ↗
             </button>
           </div>
@@ -70,14 +70,11 @@ export default function Home() {
         {/* Stats row */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
           {STATS.map((s) => (
-            <div
-              key={s.label}
-              className="bg-white/[.03] border border-white/[.06] rounded-2xl p-5"
-            >
-              <p className="text-xs text-zinc-500 mb-2">{s.label}</p>
+            <div key={s.label} className="bg-panel border border-rim rounded-2xl p-5">
+              <p className="text-xs text-ink-soft mb-2">{s.label}</p>
               <p className="text-xl font-semibold">{s.value}</p>
               {s.change && (
-                <p className="text-xs text-emerald-400 mt-1">{s.change} 24h</p>
+                <p className="text-xs text-brand-dim mt-1">{s.change} 24h</p>
               )}
             </div>
           ))}
@@ -88,9 +85,9 @@ export default function Home() {
           {/* Left — vault info */}
           <div className="flex flex-col gap-6">
             {/* About */}
-            <div className="bg-white/[.03] border border-white/[.06] rounded-2xl p-6">
+            <div className="bg-panel border border-rim rounded-2xl p-6">
               <h2 className="font-medium mb-3">About</h2>
-              <p className="text-sm text-zinc-400 leading-relaxed">
+              <p className="text-sm text-ink-soft leading-relaxed">
                 mMEV is a liquid yield token (LYT) managed by MEV Capital, one
                 of the leading DeFi strategy managers. The vault dynamically
                 allocates USDC across MEV-optimized lending and yield strategies,
@@ -100,7 +97,7 @@ export default function Home() {
             </div>
 
             {/* Allocation */}
-            <div className="bg-white/[.03] border border-white/[.06] rounded-2xl p-6">
+            <div className="bg-panel border border-rim rounded-2xl p-6">
               <h2 className="font-medium mb-5">Strategy Allocation</h2>
               <div className="flex gap-1 h-2 rounded-full overflow-hidden mb-5">
                 {ALLOCATIONS.map((a) => (
@@ -116,7 +113,7 @@ export default function Home() {
                   <div key={a.protocol} className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className={`w-2 h-2 rounded-full ${a.color}`} />
-                      <span className="text-sm text-zinc-300">{a.protocol}</span>
+                      <span className="text-sm text-ink-soft">{a.protocol}</span>
                     </div>
                     <span className="text-sm font-medium">{a.share}%</span>
                   </div>
@@ -125,17 +122,19 @@ export default function Home() {
             </div>
 
             {/* Risk */}
-            <div className="bg-white/[.03] border border-white/[.06] rounded-2xl p-6">
+            <div className="bg-panel border border-rim rounded-2xl p-6">
               <h2 className="font-medium mb-4">Risk Parameters</h2>
               <div className="grid grid-cols-3 gap-4">
                 {[
-                  { label: "Risk Score", value: "Low", accent: "text-emerald-400" },
-                  { label: "Max Drawdown", value: "0.12%", accent: "text-white" },
-                  { label: "Redemptions", value: "Instant", accent: "text-white" },
+                  { label: "Risk Score", value: "Low", accent: true },
+                  { label: "Max Drawdown", value: "0.12%", accent: false },
+                  { label: "Redemptions", value: "Instant", accent: false },
                 ].map((r) => (
-                  <div key={r.label} className="bg-white/[.02] rounded-xl p-4">
-                    <p className="text-xs text-zinc-500 mb-1.5">{r.label}</p>
-                    <p className={`text-sm font-medium ${r.accent}`}>{r.value}</p>
+                  <div key={r.label} className="bg-panel border border-rim rounded-xl p-4">
+                    <p className="text-xs text-ink-soft mb-1.5">{r.label}</p>
+                    <p className={`text-sm font-medium ${r.accent ? "text-brand-dim" : "text-ink"}`}>
+                      {r.value}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -144,17 +143,17 @@ export default function Home() {
 
           {/* Right — deposit/withdraw card */}
           <div className="h-fit sticky top-6">
-            <div className="bg-white/[.03] border border-white/[.06] rounded-2xl p-6">
+            <div className="bg-panel border border-rim rounded-2xl p-6">
               {/* Tabs */}
-              <div className="flex bg-white/[.04] rounded-xl p-1 mb-6">
+              <div className="flex bg-panel border border-rim rounded-xl p-1 mb-6">
                 {(["deposit", "withdraw"] as const).map((t) => (
                   <button
                     key={t}
                     onClick={() => setTab(t)}
                     className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors capitalize ${
                       tab === t
-                        ? "bg-white text-black"
-                        : "text-zinc-400 hover:text-white"
+                        ? "bg-ink text-canvas"
+                        : "text-ink-soft hover:text-ink"
                     }`}
                   >
                     {t}
@@ -163,13 +162,13 @@ export default function Home() {
               </div>
 
               {/* You pay */}
-              <div className="bg-white/[.03] border border-white/[.06] rounded-xl p-4 mb-3">
+              <div className="bg-panel border border-rim rounded-xl p-4 mb-3">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs text-zinc-500">
+                  <span className="text-xs text-ink-soft">
                     {tab === "deposit" ? "You deposit" : "You withdraw"}
                   </span>
-                  <span className="text-xs text-zinc-500">
-                    Balance: <span className="text-zinc-300">4,200.00</span>{" "}
+                  <span className="text-xs text-ink-soft">
+                    Balance: <span className="text-ink-soft">4,200.00</span>{" "}
                     {tab === "deposit" ? "USDC" : "mMEV"}
                   </span>
                 </div>
@@ -179,9 +178,9 @@ export default function Home() {
                     placeholder="0.00"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
-                    className="flex-1 bg-transparent text-2xl font-semibold outline-none placeholder-zinc-600 min-w-0"
+                    className="flex-1 bg-transparent text-2xl font-semibold outline-none placeholder-ink-faint min-w-0 text-ink"
                   />
-                  <div className="flex items-center gap-2 bg-white/[.06] border border-white/[.08] rounded-lg px-3 py-1.5 shrink-0">
+                  <div className="flex items-center gap-2 bg-panel border border-rim rounded-lg px-3 py-1.5 shrink-0">
                     <div className="w-4 h-4 rounded-full bg-blue-400" />
                     <span className="text-sm font-medium">
                       {tab === "deposit" ? "USDC" : "mMEV"}
@@ -192,7 +191,7 @@ export default function Home() {
                   {["25%", "50%", "75%", "MAX"].map((p) => (
                     <button
                       key={p}
-                      className="text-xs text-zinc-500 hover:text-emerald-400 transition-colors"
+                      className="text-xs text-ink-faint hover:text-brand-dim transition-colors"
                     >
                       {p}
                     </button>
@@ -201,23 +200,23 @@ export default function Home() {
               </div>
 
               {/* Arrow */}
-              <div className="flex justify-center my-1 text-zinc-600 text-lg">↓</div>
+              <div className="flex justify-center my-1 text-ink-faint text-lg">↓</div>
 
               {/* You receive */}
-              <div className="bg-white/[.03] border border-white/[.06] rounded-xl p-4 mb-5">
+              <div className="bg-panel border border-rim rounded-xl p-4 mb-5">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs text-zinc-500">You receive</span>
+                  <span className="text-xs text-ink-soft">You receive</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="flex-1 text-2xl font-semibold text-zinc-500">
+                  <span className="flex-1 text-2xl font-semibold text-ink-faint">
                     {amount
                       ? tab === "deposit"
                         ? (parseFloat(amount) / 1.0412).toFixed(4)
                         : (parseFloat(amount) * 1.0412).toFixed(2)
                       : "0.00"}
                   </span>
-                  <div className="flex items-center gap-2 bg-white/[.06] border border-white/[.08] rounded-lg px-3 py-1.5 shrink-0">
-                    <div className="w-4 h-4 rounded-full bg-gradient-to-br from-emerald-400 to-teal-600" />
+                  <div className="flex items-center gap-2 bg-panel border border-rim rounded-lg px-3 py-1.5 shrink-0">
+                    <div className="w-4 h-4 rounded-full bg-gradient-to-br from-brand-gfrom to-brand-gto" />
                     <span className="text-sm font-medium">
                       {tab === "deposit" ? "mMEV" : "USDC"}
                     </span>
@@ -232,27 +231,24 @@ export default function Home() {
                   { label: "Protocol Fee", value: "0.10%" },
                   { label: "Est. Time", value: "Instant" },
                 ].map((row) => (
-                  <div
-                    key={row.label}
-                    className="flex items-center justify-between text-zinc-500"
-                  >
+                  <div key={row.label} className="flex items-center justify-between text-ink-soft">
                     <span>{row.label}</span>
-                    <span className="text-zinc-300">{row.value}</span>
+                    <span className="text-ink">{row.value}</span>
                   </div>
                 ))}
               </div>
 
-              <button className="w-full py-3.5 rounded-xl font-medium text-sm bg-emerald-500 text-black hover:bg-emerald-400 transition-colors">
+              <button className="w-full py-3.5 rounded-xl font-medium text-sm bg-brand text-brand-on hover:bg-brand-dim transition-colors">
                 {tab === "deposit" ? "Deposit" : "Withdraw"}
               </button>
 
-              <p className="text-center text-xs text-zinc-600 mt-4">
+              <p className="text-center text-xs text-ink-faint mt-4">
                 Connect wallet to continue
               </p>
             </div>
 
             {/* My position */}
-            <div className="mt-4 bg-white/[.03] border border-white/[.06] rounded-2xl p-5">
+            <div className="mt-4 bg-panel border border-rim rounded-2xl p-5">
               <h3 className="text-sm font-medium mb-4">My Position</h3>
               <div className="grid grid-cols-2 gap-3">
                 {[
@@ -262,7 +258,7 @@ export default function Home() {
                   { label: "Share", value: "—" },
                 ].map((item) => (
                   <div key={item.label}>
-                    <p className="text-xs text-zinc-500">{item.label}</p>
+                    <p className="text-xs text-ink-soft">{item.label}</p>
                     <p className="text-sm font-medium mt-0.5">{item.value}</p>
                   </div>
                 ))}
