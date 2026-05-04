@@ -18,6 +18,13 @@ const THEMES = [
 ];
 const VALID_THEMES = THEMES.map((t) => t.name);
 
+const CHAINS = [
+  { name: "EVM",      desc: "Ethereum, Base, Arbitrum, Optimism…" },
+  { name: "Algorand", desc: "Algorand blockchain"                  },
+  { name: "Solana",   desc: "Solana blockchain"                    },
+];
+const VALID_CHAINS = CHAINS.map((c) => c.name);
+
 function openBrowser(url) {
   const cmd = process.platform === "darwin" ? "open" : process.platform === "win32" ? "start" : "xdg-open";
   try { execSync(`${cmd} "${url}"`, { stdio: "ignore" }); } catch {}
@@ -32,6 +39,8 @@ const vaultNameIdx = args.indexOf("--vault-name");
 const vaultNameArg = vaultNameIdx !== -1 ? args[vaultNameIdx + 1] : null;
 const themeIdx     = args.indexOf("--theme");
 const themeArg     = themeIdx !== -1 ? args[themeIdx + 1] : null;
+const chainIdx     = args.indexOf("--chain");
+const chainArg     = chainIdx !== -1 ? args[chainIdx + 1] : null;
 
 // Flag validation (fast-fail before any UI)
 if (vaultArg && !/^0x[0-9a-fA-F]{40}$/.test(vaultArg)) {
@@ -40,6 +49,10 @@ if (vaultArg && !/^0x[0-9a-fA-F]{40}$/.test(vaultArg)) {
 }
 if (themeArg && !VALID_THEMES.includes(themeArg)) {
   p.cancel(`"${themeArg}" is not a valid theme. Choose: ${VALID_THEMES.join(", ")}.`);
+  process.exit(1);
+}
+if (chainArg && !VALID_CHAINS.includes(chainArg)) {
+  p.cancel(`"${chainArg}" is not a valid chain. Choose: ${VALID_CHAINS.join(", ")}.`);
   process.exit(1);
 }
 
@@ -82,6 +95,12 @@ const vaultAddress = vaultArg || await p.text({
 });
 if (p.isCancel(vaultAddress)) { p.cancel("Cancelled."); process.exit(0); }
 
+const chain = chainArg || await p.select({
+  message: "⛓️  Chain connector",
+  options: CHAINS.map((c) => ({ value: c.name, label: c.name, hint: c.desc })),
+});
+if (p.isCancel(chain)) { p.cancel("Cancelled."); process.exit(0); }
+
 const theme = themeArg || await p.select({
   message: "🎨 Color theme",
   options: THEMES.map((t) => ({ value: t.name, label: t.name, hint: t.desc })),
@@ -109,10 +128,11 @@ await degit(REPO, { cache: false, force: true }).clone(target).catch((err) => {
 spinner.stop("✅ Template downloaded.");
 
 // ── Apply vault name / address ────────────────────────────────────────────────
-if (vaultName || vaultAddress) {
+if (vaultName || vaultAddress || chain) {
   let env = "";
   if (vaultName)    env += `NEXT_PUBLIC_VAULT_NAME=${vaultName}\n`;
   if (vaultAddress) env += `NEXT_PUBLIC_VAULT_ADDRESS=${vaultAddress}\n`;
+  if (chain)        env += `NEXT_PUBLIC_CHAIN=${chain}\n`;
   writeFileSync(resolve(target, ".env.local"), env);
 }
 
@@ -147,6 +167,7 @@ spinner.stop("✅ Git repository initialized.");
 
 // ── Push to GitHub ────────────────────────────────────────────────────────────
 let pushedToGitHub = false;
+let deployUrl = null;
 
 if (remote) {
   spinner.start("🐙 Pushing to GitHub…");
@@ -200,8 +221,9 @@ if (deployToVercel) {
   console.log(`\n  \x1b[2m${sep}\x1b[0m`);
 
   const vercelArgs = ["--yes"];
-  if (vaultName)    vercelArgs.push("--env", `NEXT_PUBLIC_VAULT_NAME=${vaultName}`);
-  if (vaultAddress) vercelArgs.push("--env", `NEXT_PUBLIC_VAULT_ADDRESS=${vaultAddress}`);
+  if (vaultName)    vercelArgs.push("--build-env", `NEXT_PUBLIC_VAULT_NAME=${vaultName}`);
+  if (vaultAddress) vercelArgs.push("--build-env", `NEXT_PUBLIC_VAULT_ADDRESS=${vaultAddress}`);
+  if (chain)        vercelArgs.push("--build-env", `NEXT_PUBLIC_CHAIN=${chain}`);
 
   const proc = spawn("vercel", vercelArgs, { cwd: target, stdio: ["inherit", "pipe", "pipe"] });
 
@@ -217,8 +239,10 @@ if (deployToVercel) {
       if (!line) continue;
       logStream.write(line + "\n");
 
-      // Production URL signals build is about to start — print it then spin
+      // Production URL signals build is about to start — capture it, print it, then spin
       if (line.startsWith("Production:") || (line.includes(".vercel.app") && !line.includes("go to"))) {
+        const urlMatch = line.match(/https:\/\/[^\s]+\.vercel\.app/);
+        if (urlMatch && !deployUrl) deployUrl = urlMatch[0];
         const clean = line.replace(/Building|Completing/g, "").trim();
         if (clean) process.stdout.write(`  ${clean}\n`);
         if (!buildTimer) startBuild();
@@ -264,8 +288,9 @@ if (deployToVercel) {
   if (deployedToVercel && (vaultName || vaultAddress)) {
     spinner.start("🔑 Persisting env vars in Vercel…");
     try {
-      if (vaultName)    execSync("vercel env add NEXT_PUBLIC_VAULT_NAME production", { cwd: target, input: vaultName,    stdio: ["pipe", "ignore", "ignore"] });
+      if (vaultName)    execSync("vercel env add NEXT_PUBLIC_VAULT_NAME production",    { cwd: target, input: vaultName,    stdio: ["pipe", "ignore", "ignore"] });
       if (vaultAddress) execSync("vercel env add NEXT_PUBLIC_VAULT_ADDRESS production", { cwd: target, input: vaultAddress, stdio: ["pipe", "ignore", "ignore"] });
+      if (chain)        execSync("vercel env add NEXT_PUBLIC_CHAIN production",         { cwd: target, input: chain,        stdio: ["pipe", "ignore", "ignore"] });
       spinner.stop("✅ Env vars saved to Vercel project.");
     } catch {
       spinner.stop("⚠️  Could not persist env vars — add them manually in Vercel project settings.");
@@ -296,11 +321,13 @@ const recapLines = [
   `📁 ${projectName} cloned on your machine`,
   vaultName          && `🏷️  Vault name: ${vaultName}`,
   vaultAddress       && `🔐 Vault address: ${vaultAddress}`,
+  chain              && `⛓️  Chain: ${chain}`,
   `🎨 Theme: ${theme}`,
   pushedToGitHub     && `🐙 Code pushed to GitHub (${remote})`,
   deployedToVercel   && `🚀 Project deployed on Vercel`,
+  deployedToVercel && deployUrl && `🌐 ${deployUrl}`,
   pushedToGitHub && deployedToVercel && `⚡ Every push to GitHub triggers a new Vercel deployment`,
-  deployedToVercel   && `🌐 Add a custom domain in your Vercel project settings`,
+  deployedToVercel   && `🔧 Add a custom domain in your Vercel project settings`,
 ].filter(Boolean).join("\n");
 
 p.note(recapLines, "🎉 Summary");
