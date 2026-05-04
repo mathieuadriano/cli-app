@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
-const VAULT_NAME    = process.env.NEXT_PUBLIC_VAULT_NAME    || "mMEV";
-const VAULT_ADDRESS = process.env.NEXT_PUBLIC_VAULT_ADDRESS || "";
-const CHAIN         = process.env.NEXT_PUBLIC_CHAIN         || "EVM";
+const VAULT_NAME    = process.env.NEXT_PUBLIC_VAULT_NAME    || "VAULT_NAME";
+const VAULT_ADDRESS = process.env.NEXT_PUBLIC_VAULT_ADDRESS || "VAULT_ADDRESS";
+const CHAIN         = process.env.NEXT_PUBLIC_CHAIN         || "CHAIN";
 const ETHERSCAN_URL = VAULT_ADDRESS ? `https://etherscan.io/address/${VAULT_ADDRESS}` : null;
 
 const STATS = [
@@ -15,15 +16,15 @@ const STATS = [
 ];
 
 const ALLOCATIONS = [
-  { protocol: "Morpho", share: 42, color: "bg-violet-500" },
-  { protocol: "Pendle", share: 31, color: "bg-blue-500" },
-  { protocol: "Aave", share: 18, color: "bg-teal-500" },
-  { protocol: "Idle", share: 9, color: "bg-zinc-500" },
+  { protocol: "sUSDe / PYUSD", share: 42, color: "bg-violet-500"},
+  { protocol: "weETH / PYUSD", share: 31, color: "bg-blue-500"},
+  { protocol: "cbBTC / PYUSD", share: 18, color: "bg-teal-500"},
+  { protocol: "LBTC / PYUSD", share: 9, color: "bg-zinc-500"},
 ];
 
 export default function Home() {
-  const [tab, setTab] = useState<"deposit" | "withdraw">("deposit");
   const [amount, setAmount] = useState("");
+  const [tab, setTab] = useState<"deposit" | "withdraw">("deposit");
 
   return (
     <div className="min-h-screen bg-canvas text-ink font-sans">
@@ -31,12 +32,7 @@ export default function Home() {
       <nav className="border-b border-rim px-6 py-4 flex items-center justify-between max-w-7xl mx-auto">
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 rounded-full bg-gradient-to-br from-brand-gfrom to-brand-gto" />
-          <span className="font-semibold tracking-tight text-ink">Vault Page Generator</span>
-        </div>
-        <div className="flex items-center gap-6 text-sm text-ink-soft">
-          <a href="#" className="hover:text-ink transition-colors">Vaults</a>
-          <a href="#" className="hover:text-ink transition-colors">Portfolio</a>
-          <a href="#" className="hover:text-ink transition-colors">Docs</a>
+          <span className="font-semibold tracking-tight text-ink">Folks Atlas</span>
         </div>
         <button className="text-sm bg-ink text-canvas font-medium px-4 py-2 rounded-full hover:opacity-80 transition-opacity">
           Connect Wallet
@@ -52,13 +48,13 @@ export default function Home() {
             </div>
             <div>
               <div className="flex items-center gap-3">
-                <h1 className="text-2xl font-semibold tracking-tight">{VAULT_NAME}</h1>
+                <h1 className="text-2xl font-semibold tracking-tight">{VAULT_NAME} {VAULT_ADDRESS}</h1>
                 <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-brand-tint text-brand-dim border border-brand-ring">
                   Active
                 </span>
               </div>
               <p className="text-ink-soft text-sm mt-0.5">
-                MEV Capital · Liquid Yield Token · USDC · {CHAIN}
+                Liquid Yield Token · USDC · {CHAIN}
               </p>
             </div>
           </div>
@@ -99,11 +95,7 @@ export default function Home() {
             <div className="bg-panel border border-rim rounded-2xl p-6">
               <h2 className="font-medium mb-3">About</h2>
               <p className="text-sm text-ink-soft leading-relaxed">
-                mMEV is a liquid yield token (LYT) managed by MEV Capital, one
-                of the leading DeFi strategy managers. The vault dynamically
-                allocates USDC across MEV-optimized lending and yield strategies,
-                targeting superior risk-adjusted returns while maintaining instant
-                redemptions.
+                Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.
               </p>
             </div>
 
@@ -122,10 +114,10 @@ export default function Home() {
               <div className="grid grid-cols-2 gap-3">
                 {ALLOCATIONS.map((a) => (
                   <div key={a.protocol} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
+                    <Link href="/spoke" className="flex items-center gap-2">
                       <div className={`w-2 h-2 rounded-full ${a.color}`} />
                       <span className="text-sm text-ink-soft">{a.protocol}</span>
-                    </div>
+                    </Link>
                     <span className="text-sm font-medium">{a.share}%</span>
                   </div>
                 ))}
@@ -211,7 +203,7 @@ export default function Home() {
               </div>
 
               {/* Arrow */}
-              <div className="flex justify-center my-1 text-ink-faint text-lg">↓</div>
+              <div className="flex justify-center my-1 text-ink-faint text-sm">↓</div>
 
               {/* You receive */}
               <div className="bg-panel border border-rim rounded-xl p-4 mb-5">
@@ -252,14 +244,12 @@ export default function Home() {
               <button className="w-full py-3.5 rounded-xl font-medium text-sm bg-brand text-brand-on hover:bg-brand-dim transition-colors">
                 {tab === "deposit" ? "Deposit" : "Withdraw"}
               </button>
-
-              <p className="text-center text-xs text-ink-faint mt-4">
-                Connect wallet to continue
-              </p>
             </div>
-
-            {/* My position */}
-            <div className="mt-4 bg-panel border border-rim rounded-2xl p-5">
+          </div>
+        </div>
+        
+        {/* My position */}
+            <div className="mt-10 bg-panel border border-rim rounded-2xl p-5">
               <h3 className="text-sm font-medium mb-4">My Position</h3>
               <div className="grid grid-cols-2 gap-3">
                 {[
@@ -275,8 +265,6 @@ export default function Home() {
                 ))}
               </div>
             </div>
-          </div>
-        </div>
       </main>
     </div>
   );
