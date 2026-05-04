@@ -8,10 +8,24 @@
     "start": "next start",
     "lint": "eslint"
   },
+  "_chainDeps": {
+    "evm":      ["wagmi", "viem", "@tanstack/react-query"],
+    "solana":   ["@solana/wallet-adapter-base", "@solana/wallet-adapter-react", "@solana/wallet-adapter-react-ui", "@solana/wallet-adapter-wallets", "@solana/web3.js"],
+    "algorand": ["@txnlab/use-wallet-react"]
+  },
   "dependencies": {
+    "@solana/wallet-adapter-base": "^0.9.27",
+    "@solana/wallet-adapter-react": "^0.15.39",
+    "@solana/wallet-adapter-react-ui": "^0.9.39",
+    "@solana/wallet-adapter-wallets": "^0.19.38",
+    "@solana/web3.js": "^1.98.4",
+    "@tanstack/react-query": "^5.100.9",
+    "@txnlab/use-wallet-react": "^4.6.0",
     "next": "16.2.4",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "viem": "^2.48.8",
+    "wagmi": "^3.6.9"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

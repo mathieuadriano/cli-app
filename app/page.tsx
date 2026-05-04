@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { ConnectButton } from "./providers";
 
 const VAULT_NAME    = process.env.NEXT_PUBLIC_VAULT_NAME    || "VAULT_NAME";
 const VAULT_ADDRESS = process.env.NEXT_PUBLIC_VAULT_ADDRESS || "VAULT_ADDRESS";
@@ -34,9 +35,7 @@ export default function Home() {
           <div className="w-6 h-6 rounded-full bg-gradient-to-br from-brand-gfrom to-brand-gto" />
           <span className="font-semibold tracking-tight text-ink">Folks Atlas</span>
         </div>
-        <button className="text-sm bg-ink text-canvas font-medium px-4 py-2 rounded-full hover:opacity-80 transition-opacity">
-          Connect Wallet
-        </button>
+        <ConnectButton />
       </nav>
 
       <main className="max-w-7xl mx-auto px-6 py-12">

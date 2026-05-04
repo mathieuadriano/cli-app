@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { ConnectButton } from "../providers";
 
 const VAULT_NAME = process.env.NEXT_PUBLIC_VAULT_NAME || "VAULT_NAME";
 const CHAIN      = process.env.NEXT_PUBLIC_CHAIN      || "CHAIN";
@@ -71,9 +72,7 @@ export default function SpokePage() {
           <Link href="/" className="hover:text-ink transition-colors">Vaults</Link>
           <Link href="/spoke" className="text-ink transition-colors">Borrow</Link>
         </div>
-        <button className="text-sm bg-ink text-canvas font-medium px-4 py-2 rounded-full hover:opacity-80 transition-opacity">
-          Connect Wallet
-        </button>
+        <ConnectButton />
       </nav>
 
       <main className="max-w-7xl mx-auto px-6 py-12">
