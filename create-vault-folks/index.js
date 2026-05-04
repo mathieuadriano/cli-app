@@ -3,7 +3,7 @@
 import * as p from "@clack/prompts";
 import degit from "degit";
 import { execSync, spawn } from "child_process";
-import { existsSync, writeFileSync, readFileSync, createWriteStream } from "fs";
+import { existsSync, writeFileSync, readFileSync, unlinkSync, createWriteStream } from "fs";
 import { tmpdir } from "os";
 import { resolve, join } from "path";
 
@@ -137,10 +137,38 @@ if (vaultName || vaultAddress || chain) {
 }
 
 // ── Apply theme ───────────────────────────────────────────────────────────────
-if (theme !== "dark") {
-  const layoutPath = join(target, "app", "layout.tsx");
-  writeFileSync(layoutPath, readFileSync(layoutPath, "utf8").replace('data-theme="dark"', `data-theme="${theme}"`));
+const layoutPath = join(target, "app", "layout.tsx");
+writeFileSync(layoutPath, readFileSync(layoutPath, "utf8").replace(/data-theme="[^"]+"/, `data-theme="${theme}"`));
+
+// ── Strip unused wallet providers ─────────────────────────────────────────────
+const chainKey    = chain === "EVM" ? "evm" : chain === "Solana" ? "solana" : "algorand";
+const allChainFiles = ["evm", "solana", "algorand"];
+
+// Rewrite providers/index.tsx to import the chosen chain only
+writeFileSync(
+  join(target, "app", "providers", "index.tsx"),
+  `export { WalletProvider, ConnectButton } from "./${chainKey}";\n`
+);
+
+// Delete provider files for unchosen chains
+for (const f of allChainFiles) {
+  if (f !== chainKey) {
+    const p = join(target, "app", "providers", `${f}.tsx`);
+    if (existsSync(p)) unlinkSync(p);
+  }
 }
+
+// Remove unchosen chains' packages from package.json before npm install
+const pkgPath = join(target, "package.json");
+const pkg = JSON.parse(readFileSync(pkgPath, "utf8"));
+const chainDeps = pkg._chainDeps || {};
+for (const [c, deps] of Object.entries(chainDeps)) {
+  if (c !== chainKey) {
+    for (const dep of deps) delete pkg.dependencies[dep];
+  }
+}
+delete pkg._chainDeps;
+writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + "\n");
 
 // ── Install dependencies ──────────────────────────────────────────────────────
 spinner.start("📥 Installing dependencies…");
@@ -172,14 +200,25 @@ let deployUrl = null;
 if (remote) {
   spinner.start("🐙 Pushing to GitHub…");
   try {
-    execSync(`git remote add origin ${remote}`, { cwd: target, stdio: "ignore" });
+    // If a previous failed run left origin set, overwrite it rather than crashing
+    try {
+      execSync(`git remote add origin ${remote}`, { cwd: target, stdio: "pipe" });
+    } catch {
+      execSync(`git remote set-url origin ${remote}`, { cwd: target, stdio: "pipe" });
+    }
     execSync("git push -u origin HEAD", { cwd: target, stdio: "pipe" });
     pushedToGitHub = true;
     spinner.stop("✅ Code pushed to GitHub.");
   } catch (err) {
     spinner.stop("❌ Push failed.");
-    p.log.warn(err.stderr?.toString().trim() || err.message);
-    p.log.info("Run manually: git remote add origin <url> && git push -u origin HEAD");
+    const stderr = err.stderr?.toString().trim();
+    if (stderr) p.log.warn(stderr);
+    p.log.info(
+      "Common causes:\n" +
+      "  • Repo doesn't exist yet → create it at github.com first (empty, no README)\n" +
+      "  • Auth failed → check SSH keys or run: gh auth login\n" +
+      `  • Fix & retry: cd ${projectName} && git push -u origin HEAD`
+    );
   }
 }
 
@@ -325,11 +364,12 @@ const recapLines = [
   `🎨 Theme: ${theme}`,
   pushedToGitHub     && `🐙 Code pushed to GitHub (${remote})`,
   deployedToVercel   && `🚀 Project deployed on Vercel`,
-  deployedToVercel && deployUrl && `🌐 ${deployUrl}`,
+  deployedToVercel && deployUrl && `🌐 Vault page  →  ${deployUrl}`,
+  deployedToVercel && deployUrl && `🏦 Borrow page →  ${deployUrl}/spoke`,
   pushedToGitHub && deployedToVercel && `⚡ Every push to GitHub triggers a new Vercel deployment`,
   deployedToVercel   && `🔧 Add a custom domain in your Vercel project settings`,
 ].filter(Boolean).join("\n");
 
 p.note(recapLines, "🎉 Summary");
 
-p.outro(`🛠️  Start building  →  cd ${projectName} && npm run dev`);
+p.outro(`🛠️  Start building  →  cd ${projectName} && npm run dev\n         Vault page: http://localhost:3000  ·  Borrow page: http://localhost:3000/spoke`);
