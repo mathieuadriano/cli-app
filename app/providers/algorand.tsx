@@ -1,40 +1,55 @@
 "use client";
 
-import {
-  NetworkId,
-  WalletId,
-  WalletManager,
-  WalletProvider as BaseWalletProvider,
-  useWallet,
-} from "@txnlab/use-wallet-react";
+import { useState, useEffect } from "react";
+import { PeraWalletConnect } from "@perawallet/connect";
 
-const manager = new WalletManager({
-  wallets: [WalletId.PERA, WalletId.DEFLY],
-  network: NetworkId.MAINNET,
-});
+const peraWallet = new PeraWalletConnect({ chainId: 416001 }); // MainNet
 
 export function WalletProvider({ children }: { children: React.ReactNode }) {
-  return <BaseWalletProvider manager={manager}>{children}</BaseWalletProvider>;
+  return <>{children}</>;
 }
 
 export function ConnectButton() {
-  const { wallets, activeAccount } = useWallet();
+  const [address, setAddress] = useState<string | null>(null);
 
-  if (activeAccount) {
-    const addr = activeAccount.address;
+  useEffect(() => {
+    peraWallet.reconnectSession().then((accounts) => {
+      peraWallet.connector?.on("disconnect", handleDisconnect);
+      if (accounts.length) setAddress(accounts[0]);
+    });
+  }, []);
+
+  function handleConnect() {
+    peraWallet
+      .connect()
+      .then((accounts) => {
+        peraWallet.connector?.on("disconnect", handleDisconnect);
+        setAddress(accounts[0]);
+      })
+      .catch((err) => {
+        if (err?.data?.type !== "CONNECT_MODAL_CLOSED") console.log(err);
+      });
+  }
+
+  function handleDisconnect() {
+    peraWallet.disconnect();
+    setAddress(null);
+  }
+
+  if (address) {
     return (
       <button
-        onClick={() => wallets[0]?.disconnect()}
+        onClick={handleDisconnect}
         className="text-sm bg-ink text-canvas font-medium px-4 py-2 rounded-full hover:opacity-80 transition-opacity"
       >
-        {addr.slice(0, 6)}…{addr.slice(-4)}
+        {address.slice(0, 6)}…{address.slice(-4)}
       </button>
     );
   }
 
   return (
     <button
-      onClick={() => wallets[0]?.connect()}
+      onClick={handleConnect}
       className="text-sm bg-ink text-canvas font-medium px-4 py-2 rounded-full hover:opacity-80 transition-opacity"
     >
       Connect Wallet
