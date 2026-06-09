@@ -343,6 +343,10 @@ if (deployToVercel) {
 
   try { execSync("git remote remove origin", { cwd: target, stdio: "ignore" }); } catch {}
 
+  // Remove any stale .vercel directory from the template — it would point to the wrong project
+  const vercelDir = join(target, ".vercel");
+  if (existsSync(vercelDir)) rmSync(vercelDir, { recursive: true, force: true });
+
   const vercelLog = join(tmpdir(), `vercel-${Date.now()}.log`);
   const logStream = createWriteStream(vercelLog);
   const sep = "─".repeat(54);
