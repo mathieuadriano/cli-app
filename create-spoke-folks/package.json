@@ -1,6 +1,6 @@
 {
   "name": "create-spoke-folks",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Scaffold a DeFi spoke app in seconds",
   "type": "module",
   "bin": {
