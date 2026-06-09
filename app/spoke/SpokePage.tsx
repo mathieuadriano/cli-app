@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ConnectButton } from "../providers";
 
-const VAULT_NAME = process.env.NEXT_PUBLIC_VAULT_NAME || "VAULT_NAME";
+const SPOKE_NAME = process.env.NEXT_PUBLIC_SPOKE_NAME || "SPOKE_NAME";
 const CHAIN      = process.env.NEXT_PUBLIC_CHAIN      || "CHAIN";
 
 const STATS = [
@@ -69,7 +69,7 @@ export default function SpokePage() {
           <span className="font-semibold tracking-tight text-ink">Folks Atlas</span>
         </div>
         <div className="flex items-center gap-6 text-sm text-ink-soft">
-          <Link href="/" className="hover:text-ink transition-colors">Vaults</Link>
+          <Link href="/" className="hover:text-ink transition-colors">Spoke</Link>
           <Link href="/spoke" className="text-ink transition-colors">Borrow</Link>
         </div>
         <ConnectButton />
@@ -84,7 +84,7 @@ export default function SpokePage() {
             </div>
             <div>
               <div className="flex items-center gap-3">
-                <h1 className="text-2xl font-semibold tracking-tight">{VAULT_NAME} · Borrow Market</h1>
+                <h1 className="text-2xl font-semibold tracking-tight">{SPOKE_NAME} · Borrow Market</h1>
                 <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-brand-tint text-brand-dim border border-brand-ring">
                   Active
                 </span>
@@ -116,7 +116,7 @@ export default function SpokePage() {
             <div className="bg-panel border border-rim rounded-2xl p-6">
               <h2 className="font-medium mb-3">About</h2>
               <p className="text-sm text-ink-soft leading-relaxed">
-                The {VAULT_NAME} borrow market lets you supply crypto assets as collateral and borrow USDC
+                The {SPOKE_NAME} borrow market lets you supply crypto assets as collateral and borrow USDC
                 against them. Your collateral earns yield while it secures your loan. Maintain a healthy
                 collateral ratio to avoid liquidation.
               </p>

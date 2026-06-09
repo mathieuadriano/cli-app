@@ -10,7 +10,7 @@ const config = createConfig({
   connectors: [
     injected(),
     metaMask(),
-    coinbaseWallet({ appName: "Vault App" }),
+    coinbaseWallet({ appName: "Spoke App" }),
   ],
   transports: {
     [mainnet.id]: http(),

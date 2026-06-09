@@ -1,10 +1,10 @@
 {
-  "name": "create-vault-folks",
-  "version": "0.9.1",
-  "description": "Scaffold a DeFi vault app in seconds",
+  "name": "create-spoke-folks",
+  "version": "1.0.3",
+  "description": "Scaffold a DeFi spoke app in seconds",
   "type": "module",
   "bin": {
-    "create-vault-folks": "index.js"
+    "create-spoke-folks": "index.js"
   },
   "files": [
     "index.js"
@@ -18,7 +18,7 @@
   },
   "keywords": [
     "create-app",
-    "vault",
+    "spoke",
     "defi",
     "nextjs"
   ],

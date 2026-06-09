@@ -4,10 +4,10 @@ import { useState } from "react";
 import Link from "next/link";
 import { ConnectButton } from "./providers";
 
-const VAULT_NAME    = process.env.NEXT_PUBLIC_VAULT_NAME    || "VAULT_NAME";
-const VAULT_ADDRESS = process.env.NEXT_PUBLIC_VAULT_ADDRESS || "VAULT_ADDRESS";
+const SPOKE_NAME    = process.env.NEXT_PUBLIC_SPOKE_NAME    || "SPOKE_NAME";
+const SPOKE_ADDRESS = process.env.NEXT_PUBLIC_SPOKE_ADDRESS || "SPOKE_ADDRESS";
 const CHAIN         = process.env.NEXT_PUBLIC_CHAIN         || "CHAIN";
-const ETHERSCAN_URL = VAULT_ADDRESS ? `https://etherscan.io/address/${VAULT_ADDRESS}` : null;
+const ETHERSCAN_URL = SPOKE_ADDRESS ? `https://etherscan.io/address/${SPOKE_ADDRESS}` : null;
 
 const STATS = [
   { label: "Total Value Locked", value: "$82.4M", change: "+2.3%" },
@@ -47,7 +47,7 @@ export default function Home() {
             </div>
             <div>
               <div className="flex items-center gap-3">
-                <h1 className="text-2xl font-semibold tracking-tight">{VAULT_NAME} {VAULT_ADDRESS}</h1>
+                <h1 className="text-2xl font-semibold tracking-tight">{SPOKE_NAME} {SPOKE_ADDRESS}</h1>
                 <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-brand-tint text-brand-dim border border-brand-ring">
                   Active
                 </span>
@@ -171,7 +171,7 @@ export default function Home() {
                   </span>
                   <span className="text-xs text-ink-soft">
                     Balance: <span className="text-ink-soft">4,200.00</span>{" "}
-                    {tab === "deposit" ? "USDC" : VAULT_NAME}
+                    {tab === "deposit" ? "USDC" : SPOKE_NAME}
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
@@ -185,7 +185,7 @@ export default function Home() {
                   <div className="flex items-center gap-2 bg-panel border border-rim rounded-lg px-3 py-1.5 shrink-0">
                     <div className="w-4 h-4 rounded-full bg-blue-400" />
                     <span className="text-sm font-medium">
-                      {tab === "deposit" ? "USDC" : VAULT_NAME}
+                      {tab === "deposit" ? "USDC" : SPOKE_NAME}
                     </span>
                   </div>
                 </div>
@@ -220,7 +220,7 @@ export default function Home() {
                   <div className="flex items-center gap-2 bg-panel border border-rim rounded-lg px-3 py-1.5 shrink-0">
                     <div className="w-4 h-4 rounded-full bg-gradient-to-br from-brand-gfrom to-brand-gto" />
                     <span className="text-sm font-medium">
-                      {tab === "deposit" ? VAULT_NAME : "USDC"}
+                      {tab === "deposit" ? SPOKE_NAME : "USDC"}
                     </span>
                   </div>
                 </div>

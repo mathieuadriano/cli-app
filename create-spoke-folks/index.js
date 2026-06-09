@@ -3,9 +3,16 @@
 import * as p from "@clack/prompts";
 import degit from "degit";
 import { execSync, spawn } from "child_process";
-import { existsSync, writeFileSync, readFileSync, unlinkSync, createWriteStream } from "fs";
+import { existsSync, writeFileSync, readFileSync, unlinkSync, rmSync, createWriteStream } from "fs";
 import { tmpdir } from "os";
 import { resolve, join } from "path";
+
+// ── Node.js version guard ─────────────────────────────────────────────────────
+const [nodeMajor] = process.versions.node.split(".").map(Number);
+if (nodeMajor < 18) {
+  console.error(`\n  ✖ Node.js 18 or higher is required (you have v${process.versions.node}).\n  Update at https://nodejs.org\n`);
+  process.exit(1);
+}
 
 const REPO = "mathieuadriano/cli-app";
 
@@ -32,19 +39,43 @@ function openBrowser(url) {
 
 // ── Parse CLI flags ────────────────────────────────────────────────────────────
 const args = process.argv.slice(2);
+
+// --help / -h  (check before any prompts or validation)
+if (args.includes("--help") || args.includes("-h")) {
+  console.log(`
+  create-spoke-folks — scaffold a DeFi spoke app in seconds
+
+  Usage
+    npx create-spoke-folks@latest [project-name] [flags]
+
+  Flags
+    --spoke-name    <name>    Spoke display name
+    --spoke-address <addr>    Sault contract address (0x…)
+    --chain         <chain>   Chain connector: ${VALID_CHAINS.join(", ")}
+    --theme         <theme>   Color theme: ${VALID_THEMES.join(", ")}
+    -h, --help                Show this help
+
+  Examples
+    npx create-spoke-folks@latest my-app
+    npx create-spoke-folks@latest my-app --chain Solana --theme ocean
+    npx create-spoke-folks@latest my-app --spoke-address 0xb576765fB15505433aF24FEe2c0325895C559FB2
+  `);
+  process.exit(0);
+}
+
 const nameArg      = args.find((a) => !a.startsWith("--"));
-const vaultIdx     = args.indexOf("--vault-address");
-const vaultArg     = vaultIdx !== -1 ? args[vaultIdx + 1] : null;
-const vaultNameIdx = args.indexOf("--vault-name");
-const vaultNameArg = vaultNameIdx !== -1 ? args[vaultNameIdx + 1] : null;
+const spokeIdx     = args.indexOf("--spoke-address");
+const spokeArg     = spokeIdx !== -1 ? args[spokeIdx + 1] : null;
+const spokeNameIdx = args.indexOf("--spoke-name");
+const spokeNameArg = spokeNameIdx !== -1 ? args[spokeNameIdx + 1] : null;
 const themeIdx     = args.indexOf("--theme");
 const themeArg     = themeIdx !== -1 ? args[themeIdx + 1] : null;
 const chainIdx     = args.indexOf("--chain");
 const chainArg     = chainIdx !== -1 ? args[chainIdx + 1] : null;
 
 // Flag validation (fast-fail before any UI)
-if (vaultArg && !/^0x[0-9a-fA-F]{40}$/.test(vaultArg)) {
-  p.cancel(`"${vaultArg}" is not a valid Ethereum address.`);
+if (spokeArg && !/^0x[0-9a-fA-F]{40}$/.test(spokeArg)) {
+  p.cancel(`"${spokeArg}" is not a valid Ethereum address.`);
   process.exit(1);
 }
 if (themeArg && !VALID_THEMES.includes(themeArg)) {
@@ -65,12 +96,12 @@ try {
 }
 
 // ── Intro ──────────────────────────────────────────────────────────────────────
-p.intro(" 🏦 create-vault-folks ");
+p.intro(" 🏦 create-spoke-folks ");
 
 // ── Gather answers upfront ────────────────────────────────────────────────────
 const projectName = nameArg || await p.text({
   message: "📁 Project name",
-  placeholder: "my-vault-app",
+  placeholder: "my-spoke-app",
   validate: (v) => {
     if (!v.trim()) return "Project name is required.";
     if (!/^[a-zA-Z0-9_-]+$/.test(v)) return "Only letters, numbers, hyphens and underscores allowed.";
@@ -81,19 +112,26 @@ if (p.isCancel(projectName)) { p.cancel("Cancelled."); process.exit(0); }
 
 const target = resolve(process.cwd(), projectName);
 
-const vaultName = vaultNameArg || await p.text({
-  message: "🏷️  Vault name",
-  placeholder: "My Vault (leave blank to skip)",
-});
-if (p.isCancel(vaultName)) { p.cancel("Cancelled."); process.exit(0); }
+// Cleanup helper — deletes target dir on fatal error so the user can retry cleanly
+function cleanup() {
+  if (existsSync(target)) {
+    try { rmSync(target, { recursive: true, force: true }); } catch {}
+  }
+}
 
-const vaultAddress = vaultArg || await p.text({
-  message: "🔐 Vault address",
+const spokeName = spokeNameArg || await p.text({
+  message: "🏷️  Spoke name",
+  placeholder: "My Spoke (leave blank to skip)",
+});
+if (p.isCancel(spokeName)) { p.cancel("Cancelled."); process.exit(0); }
+
+const spokeAddress = spokeArg || await p.text({
+  message: "🔐 Spoke address",
   placeholder: "0x… (leave blank to skip)",
   initialValue: "0xb576765fB15505433aF24FEe2c0325895C559FB2",
   validate: (v) => v && !/^0x[0-9a-fA-F]{40}$/.test(v) ? "Not a valid Ethereum address." : undefined,
 });
-if (p.isCancel(vaultAddress)) { p.cancel("Cancelled."); process.exit(0); }
+if (p.isCancel(spokeAddress)) { p.cancel("Cancelled."); process.exit(0); }
 
 const chain = chainArg || await p.select({
   message: "⛓️  Chain connector",
@@ -120,18 +158,31 @@ if (p.isCancel(deployToVercel)) { p.cancel("Cancelled."); process.exit(0); }
 const spinner = p.spinner();
 
 spinner.start("📦 Downloading template…");
-await degit(REPO, { cache: false, force: true }).clone(target).catch((err) => {
+try {
+  await degit(REPO, { cache: false, force: true }).clone(target);
+} catch (err) {
   spinner.stop("❌ Download failed.");
+  cleanup();
   p.cancel(err.message);
   process.exit(1);
-});
+}
 spinner.stop("✅ Template downloaded.");
 
-// ── Apply vault name / address ────────────────────────────────────────────────
-if (vaultName || vaultAddress || chain) {
+// Remove the CLI package from the cloned template — not needed in the user's app
+const cliDir = join(target, "create-spoke-folks");
+if (existsSync(cliDir)) rmSync(cliDir, { recursive: true, force: true });
+
+// ── Replace root page with a redirect to /spoke ───────────────────────────────
+writeFileSync(
+  join(target, "app", "page.tsx"),
+  `import { redirect } from "next/navigation";\nexport default function Home() { redirect("/spoke"); }\n`
+);
+
+// ── Apply spoke name / address ────────────────────────────────────────────────
+if (spokeName || spokeAddress || chain) {
   let env = "";
-  if (vaultName)    env += `NEXT_PUBLIC_VAULT_NAME=${vaultName}\n`;
-  if (vaultAddress) env += `NEXT_PUBLIC_VAULT_ADDRESS=${vaultAddress}\n`;
+  if (spokeName)    env += `NEXT_PUBLIC_SPOKE_NAME=${spokeName}\n`;
+  if (spokeAddress) env += `NEXT_PUBLIC_SPOKE_ADDRESS=${spokeAddress}\n`;
   if (chain)        env += `NEXT_PUBLIC_CHAIN=${chain}\n`;
   writeFileSync(resolve(target, ".env.local"), env);
 }
@@ -170,37 +221,91 @@ for (const [c, deps] of Object.entries(chainDeps)) {
 delete pkg._chainDeps;
 writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + "\n");
 
+// ── Write project README ──────────────────────────────────────────────────────
+const readmeRows = [
+  spokeName    ? `| **Spoke name**    | ${spokeName} |`        : null,
+  spokeAddress ? `| **Spoke address** | \`${spokeAddress}\` |` : null,
+  `| **Chain**         | ${chain} |`,
+  `| **Theme**         | ${theme} |`,
+].filter(Boolean);
+writeFileSync(join(target, "README.md"), [
+  `# ${spokeName || projectName}`,
+  ``,
+  `A DeFi borrow market app scaffolded with [create-spoke-folks](https://github.com/mathieuadriano/cli-app).`,
+  ``,
+  `## Project details`,
+  ``,
+  `| | |`,
+  `|---|---|`,
+  ...readmeRows,
+  ``,
+  `## Getting started`,
+  ``,
+  `\`\`\`bash`,
+  `cd ${projectName}`,
+  `npm run dev`,
+  `\`\`\``,
+  ``,
+  `Open [http://localhost:3000/spoke](http://localhost:3000/spoke) in your browser.`,
+  ``,
+  `## Build`,
+  ``,
+  `\`\`\`bash`,
+  `npm run build`,
+  `\`\`\``,
+  ``,
+].join("\n"));
+
 // ── Install dependencies ──────────────────────────────────────────────────────
-spinner.start("📥 Installing dependencies…");
+const finalPkg = JSON.parse(readFileSync(pkgPath, "utf8"));
+const deps     = Object.keys(finalPkg.dependencies   || {});
+const devDeps  = Object.keys(finalPkg.devDependencies || {});
+
+p.log.info(
+  `📦 Installing ${deps.length + devDeps.length} packages\n` +
+  `\n  dependencies (${deps.length})\n` +
+  deps.map((d) => `    · ${d}`).join("\n") +
+  `\n\n  devDependencies (${devDeps.length})\n` +
+  devDeps.map((d) => `    · ${d}`).join("\n")
+);
+
+spinner.start("📥 Installing…");
 try {
   execSync("npm install", { cwd: target, stdio: "pipe" });
-  spinner.stop("✅ Dependencies installed.");
+  spinner.stop(`✅ ${deps.length + devDeps.length} packages installed.`);
 } catch (err) {
   spinner.stop("❌ Installation failed.");
   p.log.error(err.stderr?.toString().trim() || err.message);
+  cleanup();
   process.exit(1);
 }
 
 // ── Git setup ─────────────────────────────────────────────────────────────────
 spinner.start("🔧 Initializing git repository…");
-execSync("git init", { cwd: target, stdio: "ignore" });
-// Ensure author identity is set locally so commit works even without global git config
-execSync('git config user.email "scaffold@create-vault-folks"', { cwd: target, stdio: "ignore" });
-execSync('git config user.name "create-vault-folks"', { cwd: target, stdio: "ignore" });
-spinner.message("🔧 Staging files…");
-execSync("git add -A", { cwd: target, stdio: "ignore" });
-spinner.message("🔧 Creating initial commit…");
-execSync(`git commit -m "Initial commit from create-vault-folks"`, { cwd: target, stdio: "ignore" });
-spinner.stop("✅ Git repository initialized.");
+try {
+  execSync("git init", { cwd: target, stdio: "ignore" });
+  execSync('git config user.email "scaffold@create-spoke-folks"', { cwd: target, stdio: "ignore" });
+  execSync('git config user.name "create-spoke-folks"', { cwd: target, stdio: "ignore" });
+  spinner.message("🔧 Staging files…");
+  execSync("git add -A", { cwd: target, stdio: "ignore" });
+  spinner.message("🔧 Creating initial commit…");
+  execSync(`git commit -m "Initial commit from create-spoke-folks"`, { cwd: target, stdio: "ignore" });
+  spinner.stop("✅ Git repository initialized.");
+} catch (err) {
+  spinner.stop("❌ Git setup failed.");
+  p.log.error(err.stderr?.toString().trim() || err.message);
+  cleanup();
+  process.exit(1);
+}
 
 // ── Push to GitHub ────────────────────────────────────────────────────────────
 let pushedToGitHub = false;
 let deployUrl = null;
+let connectedGitToVercel = false;
 
 if (remote) {
   spinner.start("🐙 Pushing to GitHub…");
   try {
-    // If a previous failed run left origin set, overwrite it rather than crashing
     try {
       execSync(`git remote add origin ${remote}`, { cwd: target, stdio: "pipe" });
     } catch {
@@ -260,8 +365,8 @@ if (deployToVercel) {
   console.log(`\n  \x1b[2m${sep}\x1b[0m`);
 
   const vercelArgs = ["--yes"];
-  if (vaultName)    vercelArgs.push("--build-env", `NEXT_PUBLIC_VAULT_NAME=${vaultName}`);
-  if (vaultAddress) vercelArgs.push("--build-env", `NEXT_PUBLIC_VAULT_ADDRESS=${vaultAddress}`);
+  if (spokeName)    vercelArgs.push("--build-env", `NEXT_PUBLIC_SPOKE_NAME=${spokeName}`);
+  if (spokeAddress) vercelArgs.push("--build-env", `NEXT_PUBLIC_SPOKE_ADDRESS=${spokeAddress}`);
   if (chain)        vercelArgs.push("--build-env", `NEXT_PUBLIC_CHAIN=${chain}`);
 
   const proc = spawn("vercel", vercelArgs, { cwd: target, stdio: ["inherit", "pipe", "pipe"] });
@@ -272,13 +377,11 @@ if (deployToVercel) {
     const lines = buf.split("\n");
     buf = lines.pop();
     for (const raw of lines) {
-      // Take the last \r-separated segment (Vercel overwrites lines in TTY mode)
       const segs = raw.split("\r").map((s) => s.trim()).filter(Boolean);
       const line = segs[segs.length - 1] ?? "";
       if (!line) continue;
       logStream.write(line + "\n");
 
-      // Production URL signals build is about to start — capture it, print it, then spin
       if (line.startsWith("Production:") || (line.includes(".vercel.app") && !line.includes("go to"))) {
         const urlMatch = line.match(/https:\/\/[^\s]+\.vercel\.app/);
         if (urlMatch && !deployUrl) deployUrl = urlMatch[0];
@@ -288,20 +391,17 @@ if (deployToVercel) {
         continue;
       }
 
-      // Build is done
       if (line.includes("Deployed to production")) {
         stopBuild("Deployed to production! 🚀");
         process.stdout.write(`  ${line}\n`);
         continue;
       }
 
-      // Suppress raw Building/Completing lines — spinner covers them
       if (/Building|Completing/.test(line)) {
         if (!buildTimer) startBuild();
         continue;
       }
 
-      // All other lines: only print when not currently spinning
       if (!buildTimer) process.stdout.write(`  ${line}\n`);
     }
   };
@@ -324,11 +424,11 @@ if (deployToVercel) {
   if (deployedToVercel) p.log.success("🚀 Project deployed on Vercel!");
 
   // Persist env vars in Vercel project settings so GitHub-triggered builds also pick them up
-  if (deployedToVercel && (vaultName || vaultAddress)) {
+  if (deployedToVercel && (spokeName || spokeAddress)) {
     spinner.start("🔑 Persisting env vars in Vercel…");
     try {
-      if (vaultName)    execSync("vercel env add NEXT_PUBLIC_VAULT_NAME production",    { cwd: target, input: vaultName,    stdio: ["pipe", "ignore", "ignore"] });
-      if (vaultAddress) execSync("vercel env add NEXT_PUBLIC_VAULT_ADDRESS production", { cwd: target, input: vaultAddress, stdio: ["pipe", "ignore", "ignore"] });
+      if (spokeName)    execSync("vercel env add NEXT_PUBLIC_SPOKE_NAME production",    { cwd: target, input: spokeName,    stdio: ["pipe", "ignore", "ignore"] });
+      if (spokeAddress) execSync("vercel env add NEXT_PUBLIC_SPOKE_ADDRESS production", { cwd: target, input: spokeAddress, stdio: ["pipe", "ignore", "ignore"] });
       if (chain)        execSync("vercel env add NEXT_PUBLIC_CHAIN production",         { cwd: target, input: chain,        stdio: ["pipe", "ignore", "ignore"] });
       spinner.stop("✅ Env vars saved to Vercel project.");
     } catch {
@@ -336,11 +436,13 @@ if (deployToVercel) {
     }
   }
 
+  // Re-add origin so vercel git connect can read it from .git/config
   if (remote) {
     try { execSync(`git remote add origin ${remote}`, { cwd: target, stdio: "ignore" }); } catch {}
   }
 
-  if (deployedToVercel) {
+  // Offer to connect the GitHub repo to the Vercel project
+  if (deployedToVercel && pushedToGitHub) {
     const out = existsSync(vercelLog) ? readFileSync(vercelLog, "utf8") : "";
     const match = out.match(/Linked to ([^/\s]+)\/([^(\s\n]+)/);
     const settingsUrl = match
@@ -349,8 +451,24 @@ if (deployToVercel) {
 
     const connectGit = await p.confirm({ message: "🔗 Connect your GitHub repo to this Vercel deployment?" });
     if (!p.isCancel(connectGit) && connectGit) {
-      openBrowser(settingsUrl);
-      p.log.success(settingsUrl);
+      spinner.start("🔗 Connecting GitHub repo to Vercel…");
+      try {
+        const result = execSync("vercel git connect --yes", { cwd: target, stdio: ["inherit", "pipe", "pipe"] });
+        if (result) process.stdout.write(result.toString());
+        connectedGitToVercel = true;
+        spinner.stop("✅ GitHub repo connected — every push will trigger a new deployment.");
+      } catch (err) {
+        const errText = (err.stderr?.toString() || "") + (err.stdout?.toString() || "");
+        if (errText) process.stdout.write(errText);
+        spinner.stop("⚠️  Could not auto-connect — opening Vercel project settings in your browser.");
+        openBrowser(settingsUrl);
+        p.log.info(
+          "In the browser:\n" +
+          "  1. Under \"Git Repository\", click Connect\n" +
+          "  2. Select your GitHub account and find your repo\n" +
+          "  3. Click Connect — future pushes will trigger a new deployment automatically"
+        );
+      }
     }
   }
 }
@@ -358,18 +476,17 @@ if (deployToVercel) {
 // ── Recap ─────────────────────────────────────────────────────────────────────
 const recapLines = [
   `📁 ${projectName} cloned on your machine`,
-  vaultName          && `🏷️  Vault name: ${vaultName}`,
-  vaultAddress       && `🔐 Vault address: ${vaultAddress}`,
-  chain              && `⛓️  Chain: ${chain}`,
+  spokeName        && `🏷️  Spoke name: ${spokeName}`,
+  spokeAddress     && `🔐 Spoke address: ${spokeAddress}`,
+  chain            && `⛓️  Chain: ${chain}`,
   `🎨 Theme: ${theme}`,
-  pushedToGitHub     && `🐙 Code pushed to GitHub (${remote})`,
-  deployedToVercel   && `🚀 Project deployed on Vercel`,
-  deployedToVercel && deployUrl && `🌐 Vault page  →  ${deployUrl}`,
+  pushedToGitHub   && `🐙 Code pushed to GitHub (${remote})`,
+  deployedToVercel && `🚀 Project deployed on Vercel`,
   deployedToVercel && deployUrl && `🏦 Borrow page →  ${deployUrl}/spoke`,
-  pushedToGitHub && deployedToVercel && `⚡ Every push to GitHub triggers a new Vercel deployment`,
-  deployedToVercel   && `🔧 Add a custom domain in your Vercel project settings`,
+  connectedGitToVercel && `⚡ Every push to GitHub triggers a new Vercel deployment`,
+  deployedToVercel && `🔧 Add a custom domain in your Vercel project settings`,
 ].filter(Boolean).join("\n");
 
 p.note(recapLines, "🎉 Summary");
 
-p.outro(`🛠️  Start building  →  cd ${projectName} && npm run dev\n         Vault page: http://localhost:3000  ·  Borrow page: http://localhost:3000/spoke`);
+p.outro(`🛠️  Start building  →  cd ${projectName} && npm run dev\n         http://localhost:3000/spoke`);
